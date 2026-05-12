@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 import { brand } from "@/lib/constants/brand"
 import { cn } from "@/lib/utils/cn"
 
@@ -11,16 +13,20 @@ function BrandLogo({ className }: BrandLogoProps) {
       href="#pocetna"
       aria-label="EDEN BOOKS početna"
       className={cn(
-        "flex items-center gap-3 text-sm font-semibold text-white",
+        "flex items-center text-sm font-semibold text-white",
         className
       )}
     >
-      <span className="flex size-9 items-center justify-center rounded-lg border border-white/15 bg-white/[0.06] text-[0.72rem] shadow-lg shadow-blue-500/10">
-        EB
-      </span>
-      <span className="leading-none">
-        <span>{brand.wordmark.primary}</span>{" "}
-        <span className="text-primary">{brand.wordmark.accent}</span>
+      <Image
+        src="/images/logos/logo.png"
+        alt={brand.name}
+        width={162}
+        height={40}
+        priority
+        className="h-8 w-auto object-contain"
+      />
+      <span className="sr-only">
+        {brand.wordmark.primary} {brand.wordmark.accent}
       </span>
     </a>
   )
