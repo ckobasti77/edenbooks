@@ -1,0 +1,186 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "EDEN BOOKS početna" [ref=e4] [cursor=pointer]:
+        - /url: "#pocetna"
+        - generic [ref=e5]: EB
+        - generic [ref=e6]: EDEN BOOKS
+      - navigation "Glavna navigacija" [ref=e7]:
+        - link "Početna" [ref=e8] [cursor=pointer]:
+          - /url: "#pocetna"
+        - link "Knjige" [ref=e9] [cursor=pointer]:
+          - /url: "#biblioteka"
+        - link "Audio knjige" [ref=e10] [cursor=pointer]:
+          - /url: "#audio-knjige"
+        - link "Kategorije" [ref=e11] [cursor=pointer]:
+          - /url: "#preporuke"
+        - link "Top liste" [ref=e12] [cursor=pointer]:
+          - /url: "#paketi"
+        - link "Aplikacija" [ref=e13] [cursor=pointer]:
+          - /url: "#uredjaji"
+      - generic [ref=e14]:
+        - button "Pretraga" [ref=e15]:
+          - img
+        - link "Prijava" [ref=e16] [cursor=pointer]:
+          - /url: "#"
+        - link "Registracija" [ref=e17] [cursor=pointer]:
+          - /url: "#zapocni"
+  - progressbar "Napredak kroz stranicu" [ref=e18]
+  - main [ref=e20]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - paragraph [ref=e26]: TVOJ SVET KNJIGA
+        - heading "Knjige koje te pokreću." [level=1] [ref=e27]
+        - paragraph [ref=e28]: Otkrij, čitaj i slušaj hiljade naslova bilo kad i bilo gde. Eden Books spaja digitalnu biblioteku, audio knjige i personalizovane preporuke u jedno premium iskustvo.
+        - generic [ref=e29]:
+          - link "Istraži knjige" [ref=e30] [cursor=pointer]:
+            - /url: "#biblioteka"
+            - text: Istraži knjige
+            - img
+          - link "Pogledaj kako radi" [ref=e31] [cursor=pointer]:
+            - /url: "#audio-knjige"
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - img [ref=e35]
+            - generic [ref=e37]: Hiljade naslova
+          - generic [ref=e38]:
+            - img [ref=e40]
+            - generic [ref=e42]: Čitaj ili slušaj
+          - generic [ref=e43]:
+            - img [ref=e45]
+            - generic [ref=e48]: Uvek uz tebe
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - term [ref=e51]: 500K+
+            - definition [ref=e52]: zadovoljnih korisnika
+          - generic [ref=e53]:
+            - term [ref=e54]: 50K+
+            - definition [ref=e55]: naslova u ponudi
+          - generic [ref=e56]:
+            - term [ref=e57]: "4.8"
+            - definition [ref=e58]: prosečna ocena
+          - generic [ref=e59]:
+            - term [ref=e60]: Svi uređaji
+            - definition [ref=e61]: dostupno na svim uređajima
+      - generic [ref=e62]:
+        - generic [ref=e66]:
+          - generic [ref=e68]: EDEN BOOKS
+          - generic [ref=e70]:
+            - paragraph [ref=e76]: Tvoja sledeća knjiga
+            - paragraph [ref=e79]: 68% pročitano
+        - generic [ref=e80]: Nova izdanja
+        - generic [ref=e81]: Audio
+        - generic [ref=e82]: Klasici
+        - generic [ref=e85]:
+          - img [ref=e87]
+          - generic [ref=e90]:
+            - paragraph [ref=e91]: EDEN signal
+            - paragraph [ref=e92]: Personalizovan izbor za večeras
+    - generic [ref=e94]:
+      - generic [ref=e95]:
+        - heading "Biblioteka koja uvek ide sa tobom." [level=2] [ref=e96]
+        - paragraph [ref=e97]: Od klasika do novih izdanja, Eden Books ti daje preglednu digitalnu biblioteku koja je dostupna u svakom trenutku.
+      - generic [ref=e99]:
+        - generic [ref=e101]:
+          - img [ref=e103]
+          - generic [ref=e106]: Digitalna polica
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109]:
+              - img [ref=e111]
+              - generic [ref=e113]: Klasici
+            - generic [ref=e114]: "01"
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - img [ref=e118]
+              - generic [ref=e120]: Nova izdanja
+            - generic [ref=e121]: "02"
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - img [ref=e125]
+              - generic [ref=e127]: Sačuvano
+            - generic [ref=e128]: "03"
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - img [ref=e132]
+              - generic [ref=e134]: U toku
+            - generic [ref=e135]: "04"
+    - generic [ref=e137]:
+      - generic [ref=e138]:
+        - heading "Kad ne možeš da čitaš - slušaj." [level=2] [ref=e139]
+        - paragraph [ref=e140]: Nastavi knjigu kao audio izdanje, sačuvaj progres i vrati se tačno tamo gde si stao.
+      - generic [ref=e142]:
+        - generic [ref=e144]:
+          - img [ref=e146]
+          - generic [ref=e148]: Nastavi slušanje
+        - generic [ref=e149]:
+          - generic [ref=e151]:
+            - img [ref=e153]
+            - paragraph [ref=e156]: Audio izdanje
+          - generic [ref=e159]:
+            - generic [ref=e160]: Sinhronizovan progres
+            - generic [ref=e161]: Offline mod
+    - generic [ref=e163]:
+      - generic [ref=e164]:
+        - heading "Preporuke koje prate tvoj ukus." [level=2] [ref=e165]
+        - paragraph [ref=e166]: Pronađi sledeću knjigu bez beskrajnog pretraživanja. Eden Books ti predlaže naslove prema tvojim interesovanjima, žanrovima i navikama čitanja.
+      - generic [ref=e168]:
+        - generic [ref=e170]:
+          - img [ref=e172]
+          - generic [ref=e175]: Lični izbor
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - generic [ref=e178]: "01"
+            - paragraph [ref=e179]: Drama
+          - generic [ref=e180]:
+            - generic [ref=e181]: "02"
+            - paragraph [ref=e182]: Biznis
+          - generic [ref=e183]:
+            - generic [ref=e184]: "03"
+            - paragraph [ref=e185]: Psihologija
+          - generic [ref=e186]:
+            - generic [ref=e187]: "04"
+            - paragraph [ref=e188]: Trileri
+    - generic [ref=e190]:
+      - generic [ref=e191]:
+        - heading "Izaberi paket koji prati tvoj ritam." [level=2] [ref=e192]
+        - paragraph [ref=e193]: Bilo da čitaš povremeno ili svakog dana, Eden Books ima paket koji odgovara tvom načinu čitanja.
+      - generic [ref=e195]:
+        - generic [ref=e197]:
+          - img [ref=e199]
+          - generic [ref=e201]: Paketi
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - img [ref=e205]
+              - generic [ref=e208]: Essential
+            - generic [ref=e209]: "01"
+          - generic [ref=e210]:
+            - generic [ref=e211]:
+              - img [ref=e212]
+              - generic [ref=e215]: Premium
+            - generic [ref=e216]: "02"
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - img [ref=e219]
+              - generic [ref=e222]: Family
+            - generic [ref=e223]: "03"
+    - generic [ref=e225]:
+      - generic [ref=e226]:
+        - heading "Počni na telefonu, nastavi gde god želiš." [level=2] [ref=e227]
+        - paragraph [ref=e228]: Tvoj progres, omiljeni naslovi i biblioteka ostaju sinhronizovani na svim uređajima.
+      - generic [ref=e230]:
+        - generic [ref=e232]:
+          - img [ref=e234]
+          - generic [ref=e237]: Sinhronizovano
+        - generic [ref=e239]:
+          - paragraph [ref=e242]: Telefon
+          - paragraph [ref=e245]: Tablet
+          - paragraph [ref=e248]: Desktop
+    - generic [ref=e252]:
+      - heading "Tvoja sledeća knjiga je već tu." [level=2] [ref=e253]
+      - paragraph [ref=e254]: Uđi u Eden Books i pronađi naslov koji će te pokrenuti.
+      - link "Započni čitanje" [ref=e255] [cursor=pointer]:
+        - /url: "#pocetna"
+        - text: Započni čitanje
+        - img
