@@ -34,22 +34,23 @@ export const scrollyCopyScenes = [
 ] as const
 
 function ScrollyCopy({ progress }: ScrollyCopyProps) {
-  const audioAmount = smoothstep(0.66, 0.82, progress)
+  const readerExit = smoothstep(0.62, 0.72, progress)
+  const audioEnter = smoothstep(0.78, 0.9, progress)
 
   return (
-    <Container className="pointer-events-none relative z-20 grid h-full grid-cols-[0.9fr_1.1fr] items-center pt-20">
+    <Container className="pointer-events-none relative z-20 grid h-full grid-cols-[0.9fr_1.1fr] items-center pt-28">
       <div className="relative min-h-[520px] max-w-[620px]">
         <CopyPanel
           headingLevel={1}
-          opacity={1 - audioAmount}
+          opacity={1 - readerExit}
           scene={scrollyCopyScenes[0]}
-          translateY={-18 * audioAmount}
+          translateY={-28 * readerExit}
         />
         <CopyPanel
           headingLevel={2}
-          opacity={audioAmount}
+          opacity={audioEnter}
           scene={scrollyCopyScenes[1]}
-          translateY={26 * (1 - audioAmount)}
+          translateY={28 * (1 - audioEnter)}
         />
       </div>
     </Container>
@@ -69,9 +70,10 @@ function CopyPanel({ headingLevel, opacity, scene, translateY }: CopyPanelProps)
 
   return (
     <div
-      className="absolute left-0 top-[66%] w-full -translate-y-1/2 transition-transform duration-200"
+      className="absolute left-0 top-[90%] w-full -translate-y-1/2 transition-transform duration-200"
       style={{
         opacity,
+        pointerEvents: opacity > 0.5 ? "auto" : "none",
         transform: `translateY(calc(-50% + ${translateY}px))`,
       }}
     >

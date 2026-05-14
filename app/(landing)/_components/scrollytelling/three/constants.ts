@@ -1,8 +1,11 @@
 import { MathUtils, Vector3, type Vector3Tuple } from "three"
 
-export const PHONE_MODEL_PATH = "/models/phone.glb"
+export const PHONE_MODEL_PATH = "/models/iphone-17-pro-max.glb"
 
-export const DUPLICATE_PHONE_NODE_NAMES = ["iphone17promax_0"] as const
+export const PHONE_ROOT_NODE_NAME = "Phone_21"
+export const PHONE_SCREEN_MESH_NODE_NAME = "Object_59"
+export const PHONE_FRONT_GLASS_NODE_NAME = "Object_60"
+export const PHONE_SPEAKER_NODE_NAME = "Object_64"
 
 export const PHONE_BASE_ROTATION: Vector3Tuple = [
   0.12,
@@ -25,16 +28,22 @@ export const PHONE_AUDIO_ROTATION: Vector3Tuple = [
   -0.02,
 ]
 
-export const PHONE_SCALE = 3.8
-export const PHONE_POSITION: Vector3Tuple = [1.78, -0.04, 0]
+export const PHONE_SCALE = 11.05
+export const PHONE_POSITION: Vector3Tuple = [1.72, -0.02, 0]
 export const PHONE_MOBILE_FALLBACK_IMAGE = "/images/devices/mobile-mockup.avif"
+export const PHONE_SCREEN_VIDEO_PATH = "/videos/phone-screen.mp4"
+export const PHONE_SCREEN_VIDEO_ASPECT = 372 / 684
 
-export const SCREEN_PLANE_POSITION: Vector3Tuple = [0.1, 0.035, 0.405]
-export const SCREEN_PLANE_ROTATION: Vector3Tuple = [0, 0, 0]
-export const SCREEN_PLANE_SCALE: Vector3Tuple = [0.33, 0.76, 1]
+export const PHONE_SCREEN_SURFACE_POSITION: Vector3Tuple = [0, 0, 0.0048]
+export const PHONE_SCREEN_SURFACE_ROTATION: Vector3Tuple = [0, 0, 0]
+export const PHONE_SCREEN_SURFACE_SCALE: Vector3Tuple = [0.0718, 0.1572, 1]
 
 export const READER_SCREEN_ASSETS = [] as const
 export const AUDIO_SCREEN_ASSETS = [] as const
+
+export const AUDIO_WAVE_ORIGIN: Vector3Tuple = [0.002, -0.081, 0.008]
+export const AUDIO_WAVE_ROTATION: Vector3Tuple = [0, 0, -0.08]
+export const AUDIO_WAVE_SCALE: Vector3Tuple = [0.19, 0.1, 1]
 
 export const BOOK_COVER_ASSETS = [
   {
@@ -62,41 +71,37 @@ export const BOOK_COVER_ASSETS = [
     candidates: ["/images/books/5.avif"],
     color: "#6c7a91",
   },
-  {
-    title: "Eden audio",
-    candidates: [],
-    color: "#f7faff",
-  },
 ] as const
 
 export const BOOK_HIDDEN_POSITION = new Vector3(
-  PHONE_POSITION[0] - 0.08,
+  PHONE_POSITION[0] - 0.04,
   PHONE_POSITION[1] - 0.08,
-  -0.75
+  -0.38
 )
 
 export const BOOK_SCREEN_TARGET = new Vector3(
-  PHONE_POSITION[0] - 0.02,
-  PHONE_POSITION[1] - 0.03,
-  0.34
+  PHONE_POSITION[0] + 0.03,
+  PHONE_POSITION[1] + 0.01,
+  0.12
 )
 
 export const BOOK_SCREEN_EXIT = new Vector3(
-  PHONE_POSITION[0] - 0.02,
-  PHONE_POSITION[1] - 0.03,
-  -0.48
+  PHONE_POSITION[0] + 0.02,
+  PHONE_POSITION[1] + 0.01,
+  -0.08
 )
 
 export const BOOK_ARC_POINTS = [
-  new Vector3(PHONE_POSITION[0] - 1.55, PHONE_POSITION[1] + 0.1, 0.03),
-  new Vector3(PHONE_POSITION[0] - 1.18, PHONE_POSITION[1] + 0.95, 0.08),
-  new Vector3(PHONE_POSITION[0] - 0.36, PHONE_POSITION[1] + 1.34, 0.1),
-  new Vector3(PHONE_POSITION[0] + 0.5, PHONE_POSITION[1] + 1.14, 0.08),
-  new Vector3(PHONE_POSITION[0] + 1.06, PHONE_POSITION[1] + 0.42, 0.03),
-  new Vector3(PHONE_POSITION[0] + 0.78, PHONE_POSITION[1] - 0.5, -0.02),
+  new Vector3(PHONE_POSITION[0] - 1.04, PHONE_POSITION[1] - 0.22, 0.22),
+  new Vector3(PHONE_POSITION[0] - 0.82, PHONE_POSITION[1] + 0.44, 0.25),
+  new Vector3(PHONE_POSITION[0] - 0.16, PHONE_POSITION[1] + 0.78, 0.27),
+  new Vector3(PHONE_POSITION[0] + 0.72, PHONE_POSITION[1] + 0.48, 0.3),
+  new Vector3(PHONE_POSITION[0] + 0.88, PHONE_POSITION[1] - 0.12, 0.32),
 ] as const
 
-export const BOOK_ROTATIONS = [-0.42, -0.22, -0.05, 0.12, 0.3, 0.46] as const
+export const BOOK_ROTATIONS = [-0.32, -0.18, 0.02, 0.18, 0.32] as const
+export const BOOK_DEPTH_VARIATION = [0.02, 0.04, 0.06, 0.08, 0.1] as const
+export const BOOK_SCALE_VARIATION = [0.72, 0.78, 0.86, 0.78, 0.72] as const
 
 export function clamp01(value: number) {
   return MathUtils.clamp(value, 0, 1)
@@ -121,8 +126,8 @@ export function mixVector(
 
 export function getPhoneRotation(progress: number): Vector3Tuple {
   const reveal = smoothstep(0.18, 0.42, progress)
-  const absorb = smoothstep(0.48, 0.74, progress)
-  const audio = smoothstep(0.74, 1, progress)
+  const absorb = smoothstep(0.45, 0.72, progress)
+  const audio = smoothstep(0.78, 1, progress)
 
   const rotation = PHONE_BASE_ROTATION.map((value, index) =>
     mix(value, PHONE_BOOK_REVEAL_TILT[index], reveal)
@@ -137,10 +142,10 @@ export function getPhoneRotation(progress: number): Vector3Tuple {
 }
 
 export function getPhonePosition(progress: number): Vector3Tuple {
-  const audio = smoothstep(0.72, 1, progress)
+  const audio = smoothstep(0.78, 1, progress)
 
   return [
-    mix(PHONE_POSITION[0], PHONE_POSITION[0] + 0.08, audio),
+    mix(PHONE_POSITION[0], PHONE_POSITION[0] + 0.06, audio),
     mix(PHONE_POSITION[1], PHONE_POSITION[1] + 0.02, audio),
     PHONE_POSITION[2],
   ]

@@ -86,7 +86,7 @@ function EdenBooks3DScrollytelling() {
       <section
         ref={rootRef}
         className={cn(
-          "relative hidden h-[240vh] bg-[#02040a] lg:block",
+          "relative hidden h-[261vh] bg-[#02040a] lg:block",
           shouldReduceMotion && "lg:hidden"
         )}
       >
@@ -94,7 +94,14 @@ function EdenBooks3DScrollytelling() {
           data-eden-3d-sticky="true"
           className="relative top-0 h-screen overflow-hidden"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_24%,rgba(47,140,255,0.28),transparent_34rem),radial-gradient(circle_at_18%_68%,rgba(124,199,255,0.11),transparent_28rem),linear-gradient(135deg,#02040a_0%,#050914_54%,#08111f_100%)]" />
+          <div className="absolute inset-0 bg-[#02040a]" />
+          <div
+            className="absolute -inset-20 scale-105 opacity-90 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(ellipse at 78% 18%, rgba(47,140,255,0.18), transparent 30rem), radial-gradient(ellipse at 64% 82%, rgba(124,199,255,0.12), transparent 26rem), radial-gradient(ellipse at 23% 78%, rgba(47,140,255,0.1), transparent 24rem), radial-gradient(ellipse at 88% 58%, rgba(132,240,212,0.06), transparent 20rem), radial-gradient(ellipse at 14% 30%, rgba(78,121,255,0.08), transparent 22rem), linear-gradient(135deg, #02040a 0%, #050914 54%, #08111f 100%)",
+            }}
+          />
           <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:78px_78px]" />
           <div className="absolute inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-background to-transparent" />
 
@@ -116,8 +123,14 @@ function SceneLoadingFallback() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
     >
-      <div className="absolute right-[12%] top-1/2 h-[560px] w-[300px] -translate-y-1/2 rounded-[3rem] border border-white/10 bg-white/[0.045] shadow-[0_42px_100px_rgba(0,0,0,0.45)]" />
-      <div className="absolute right-[8%] top-1/2 size-[520px] -translate-y-1/2 rounded-full bg-primary/18 blur-3xl" />
+      <div className="absolute right-[15%] top-1/2 h-[400px] w-[214px] -translate-y-1/2 rounded-[2.5rem] border border-white/10 bg-white/[0.045] shadow-[0_42px_100px_rgba(0,0,0,0.45)]" />
+      <div
+        className="absolute right-[3%] top-[18%] h-[58%] w-[46%] blur-3xl"
+        style={{
+          background:
+            "radial-gradient(ellipse at 35% 28%, rgba(47,140,255,0.2), transparent 24rem), radial-gradient(ellipse at 78% 72%, rgba(124,199,255,0.11), transparent 20rem)",
+        }}
+      />
     </div>
   )
 }
@@ -135,16 +148,19 @@ function MobileScrollyFallback({ className }: MobileScrollyFallbackProps) {
           const Icon = index === 0 ? BookOpenIcon : AudioLinesIcon
 
           return (
-            <article key={scene.eyebrow} className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-              <div>
+            <article
+              key={scene.eyebrow}
+              className="grid max-w-full gap-8 overflow-hidden md:grid-cols-[0.9fr_1.1fr] md:items-center"
+            >
+              <div className="min-w-0 max-w-[calc(100vw-2.5rem)]">
                 <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.055] px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary backdrop-blur-xl">
                   <Icon className="size-4" />
                   {scene.eyebrow}
                 </div>
-                <h2 className="text-4xl font-semibold leading-[1.04] text-white sm:text-5xl">
+                <h2 className="max-w-[calc(100vw-2.5rem)] text-4xl font-semibold leading-[1.04] text-white sm:text-5xl">
                   {scene.headline}
                 </h2>
-                <p className="mt-5 text-base leading-7 text-white/68">
+                <p className="mt-5 max-w-[calc(100vw-2.5rem)] text-base leading-7 text-white/68">
                   {scene.subheadline}
                 </p>
                 <div className="mt-7 flex flex-wrap gap-2">

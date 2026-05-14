@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { AdditiveBlending, Group, Vector3 } from "three"
+import { Group, Vector3 } from "three"
 
 import { AudioWaves } from "./AudioWaves"
 import {
@@ -17,7 +17,6 @@ import {
 import { FlyingBooks } from "./FlyingBooks"
 import { PhoneModel } from "./PhoneModel"
 import { SceneLights } from "./SceneLights"
-import { ScreenPlane } from "./ScreenPlane"
 
 type ThreePhoneSceneProps = {
   progress: number
@@ -31,6 +30,7 @@ function ThreePhoneScene({ progress }: ThreePhoneSceneProps) {
     >
       <Canvas
         camera={{ fov: 34, position: [0, 0.08, 7] }}
+        className="pointer-events-none"
         dpr={[1, 1.55]}
         flat
         gl={{
@@ -38,14 +38,13 @@ function ThreePhoneScene({ progress }: ThreePhoneSceneProps) {
           antialias: true,
           powerPreference: "high-performance",
         }}
+        style={{ pointerEvents: "none" }}
       >
         <SceneLights />
         <CameraRig progress={progress} />
         <Suspense fallback={<LoadingPhoneSilhouette />}>
-          <LibraryHalo progress={progress} />
           <FlyingBooks progress={progress} />
           <PhoneRig progress={progress} />
-          <AudioWaves progress={progress} />
         </Suspense>
       </Canvas>
     </div>
@@ -81,8 +80,8 @@ function PhoneRig({ progress }: ThreePhoneSceneProps) {
 
   return (
     <group ref={rigRef} scale={PHONE_SCALE}>
-      <PhoneModel />
-      <ScreenPlane progress={progress} />
+      <PhoneModel progress={progress} />
+      <AudioWaves progress={progress} />
     </group>
   )
 }
@@ -93,11 +92,15 @@ function CameraRig({ progress }: ThreePhoneSceneProps) {
   const cameraPosition = useRef(new Vector3(0, 0.08, 7))
 
   useFrame((_, delta) => {
-    const audio = smoothstep(0.74, 1, progress)
+    const audio = smoothstep(0.78, 1, progress)
     const amount = 1 - Math.exp(-delta * 4.5)
 
     cameraPosition.current.lerp(
-      new Vector3(mix(0, 0.12, audio), mix(0.08, 0.16, audio), mix(7, 6.72, audio)),
+      new Vector3(
+        mix(0, 0.1, audio),
+        mix(0.08, 0.14, audio),
+        mix(7, 6.78, audio)
+      ),
       amount
     )
     cameraTarget.current.lerp(
@@ -112,28 +115,13 @@ function CameraRig({ progress }: ThreePhoneSceneProps) {
   return null
 }
 
-function LibraryHalo({ progress }: ThreePhoneSceneProps) {
-  const reveal = smoothstep(0.16, 0.56, progress)
-  const audio = smoothstep(0.72, 1, progress)
-
-  return (
-    <mesh position={[PHONE_POSITION[0], PHONE_POSITION[1] + 0.12, -0.92]} scale={[3.1, 2.3, 1]}>
-      <circleGeometry args={[1, 96]} />
-      <meshBasicMaterial
-        blending={AdditiveBlending}
-        color={audio > 0.5 ? "#7cc7ff" : "#2f8cff"}
-        depthWrite={false}
-        opacity={0.09 + reveal * 0.14 + audio * 0.06}
-        transparent
-        toneMapped={false}
-      />
-    </mesh>
-  )
-}
-
 function LoadingPhoneSilhouette() {
   return (
-    <group position={PHONE_POSITION} rotation={PHONE_BASE_ROTATION} scale={PHONE_SCALE}>
+    <group
+      position={PHONE_POSITION}
+      rotation={PHONE_BASE_ROTATION}
+      scale={PHONE_SCALE}
+    >
       <mesh>
         <planeGeometry args={[0.34, 0.72]} />
         <meshBasicMaterial color="#07101e" opacity={0.55} transparent />
