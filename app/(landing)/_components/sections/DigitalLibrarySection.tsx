@@ -23,10 +23,10 @@ function DigitalLibrarySection() {
           {section.visualItems.map((item, index) => (
             <div
               key={item}
-              className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] p-4"
+              className="flex items-center justify-between rounded-2xl border border-white/18 bg-white/[0.095] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl"
             >
               <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-lg bg-white/[0.07] text-primary">
+                <span className="flex size-9 items-center justify-center rounded-lg border border-white/14 bg-white/[0.12] text-primary">
                   <BookOpenIcon className="size-4" />
                 </span>
                 <span className="text-sm text-white/78">{item}</span>

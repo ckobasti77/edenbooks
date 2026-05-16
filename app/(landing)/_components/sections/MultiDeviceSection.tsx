@@ -25,7 +25,7 @@ function MultiDeviceSection() {
               <div key={item} className="text-center">
                 <div
                   className={[
-                    "mx-auto rounded-2xl border border-white/10 bg-white/[0.045] shadow-xl shadow-black/20",
+                    "mx-auto rounded-2xl border border-white/18 bg-white/[0.095] shadow-[0_18px_46px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-xl",
                     index === 0 && "h-36 w-20",
                     index === 1 && "h-44 w-28",
                     index === 2 && "h-32 w-36",

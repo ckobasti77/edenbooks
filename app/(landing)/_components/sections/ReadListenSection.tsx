@@ -26,7 +26,7 @@ function ReadListenSection() {
           </div>
         </CardHeader>
         <CardContent className="p-5">
-          <div className="rounded-3xl border border-white/10 bg-[#07101e] p-5">
+          <div className="rounded-3xl border border-white/18 bg-white/[0.095] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <span className="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-blue-500/24">
                 <PlayIcon className="size-5 fill-current" />
@@ -45,7 +45,7 @@ function ReadListenSection() {
             {section.visualItems.slice(1).map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm text-white/72"
+                className="rounded-2xl border border-white/18 bg-white/[0.095] p-4 text-sm text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl"
               >
                 {item}
               </div>

@@ -23,7 +23,7 @@ function RecommendationsSection() {
           {section.visualItems.map((item, index) => (
             <div
               key={item}
-              className="min-h-28 rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.075),rgba(47,140,255,0.08))] p-4"
+              className="min-h-28 rounded-2xl border border-white/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.14),rgba(47,140,255,0.08))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl"
             >
               <span className="text-xs text-primary">0{index + 1}</span>
               <p className="mt-8 text-sm font-medium text-white">{item}</p>

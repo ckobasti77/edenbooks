@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "EDEN BOOKS početna" [ref=e4] [cursor=pointer]:
+        - /url: "#pocetna"
+        - img "EDEN BOOKS" [ref=e5]
+        - generic [ref=e6]: EDEN BOOKS
+      - navigation "Glavna navigacija" [ref=e7]:
+        - link "Početna" [ref=e8] [cursor=pointer]:
+          - /url: "#pocetna"
+        - link "Knjige" [ref=e9] [cursor=pointer]:
+          - /url: "#biblioteka"
+        - link "Audio knjige" [ref=e10] [cursor=pointer]:
+          - /url: "#audio-knjige"
+        - link "Kategorije" [ref=e11] [cursor=pointer]:
+          - /url: "#preporuke"
+        - link "Top liste" [ref=e12] [cursor=pointer]:
+          - /url: "#paketi"
+        - link "Aplikacija" [ref=e13] [cursor=pointer]:
+          - /url: "#uredjaji"
+      - generic [ref=e14]:
+        - button "Pretraga" [ref=e15]:
+          - img
+        - link "Prijava" [ref=e16] [cursor=pointer]:
+          - /url: "#"
+        - link "Registracija" [ref=e17] [cursor=pointer]:
+          - /url: "#zapocni"
+  - progressbar "Napredak kroz stranicu" [ref=e18]
+  - main [ref=e20]:
+    - region "EdenBooks canvas scrollytelling" [ref=e21]:
+      - generic [ref=e23]:
+        - generic:
+          - generic:
+            - generic:
+              - paragraph: Digitalna biblioteka
+              - heading "Čitaj knjige kao da su već u tvojoj biblioteci." [level=1]:
+                - generic: Č
+                - generic: i
+                - generic: t
+                - generic: a
+                - generic: j
+                - generic: k
+                - generic: "n"
+                - generic: j
+                - generic: i
+                - generic: g
+                - generic: e
+                - generic: k
+                - generic: a
+                - generic: o
+                - generic: d
+                - generic: a
+                - generic: s
+                - generic: u
+                - generic: v
+                - generic: e
+                - generic: ć
+                - generic: u
+                - generic: t
+                - generic: v
+                - generic: o
+                - generic: j
+                - generic: o
+                - generic: j
+                - generic: b
+                - generic: i
+                - generic: b
+                - generic: l
+                - generic: i
+                - generic: o
+                - generic: t
+                - generic: e
+                - generic: c
+                - generic: i
+                - generic: .
+              - paragraph: Premium katalog se otvara odmah, direktno na telefonu, bez čekanja i bez komplikacija.
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Izaberi paket koji prati tvoj ritam." [level=2] [ref=e27]
+        - paragraph [ref=e28]: Bilo da čitaš povremeno ili svakog dana, Eden Books ima paket koji odgovara tvom načinu čitanja.
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - generic [ref=e36]: Paketi
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - img [ref=e40]
+              - generic [ref=e43]: Essential
+            - generic [ref=e44]: "01"
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - img [ref=e47]
+              - generic [ref=e50]: Premium
+            - generic [ref=e51]: "02"
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - img [ref=e54]
+              - generic [ref=e57]: Family
+            - generic [ref=e58]: "03"
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - heading "Počni na telefonu, nastavi gde god želiš." [level=2] [ref=e62]
+        - paragraph [ref=e63]: Tvoj progres, omiljeni naslovi i biblioteka ostaju sinhronizovani na svim uređajima.
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - img [ref=e69]
+          - generic [ref=e72]: Sinhronizovano
+        - generic [ref=e74]:
+          - paragraph [ref=e77]: Telefon
+          - paragraph [ref=e80]: Tablet
+          - paragraph [ref=e83]: Desktop
+    - generic [ref=e86]:
+      - heading "Tvoja sledeća knjiga je već tu." [level=2] [ref=e87]
+      - paragraph [ref=e88]: Uđi u Eden Books i pronađi naslov koji će te pokrenuti.
+      - link "Započni čitanje" [ref=e89] [cursor=pointer]:
+        - /url: "#pocetna"
+        - text: Započni čitanje
+        - img
+  - button "Open Next.js Dev Tools" [ref=e95] [cursor=pointer]:
+    - img [ref=e96]
