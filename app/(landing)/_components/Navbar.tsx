@@ -8,7 +8,7 @@ import { Container } from "@/components/ui/Container"
 
 function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 bg-transparent">
+    <header className="fixed inset-x-0 top-0 z-50 bg-transparent [font-family:var(--font-ui)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-black/48 via-black/18 to-transparent" />
       <Container className="flex h-16 items-center justify-between gap-4">
         <BrandLogo />
@@ -21,7 +21,7 @@ function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="rounded-lg px-3 py-2 text-sm text-white/72 transition-colors hover:bg-white/[0.07] hover:text-white"
+              className="rounded-lg px-3 py-2 text-sm font-bold text-white/72 transition-colors hover:bg-white/[0.07] hover:text-white"
             >
               {link.label}
             </a>
@@ -53,13 +53,13 @@ function Navbar() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="absolute right-5 top-3 flex items-center gap-2 lg:hidden">
           <Button
             type="button"
             variant="ghost"
             size="icon-lg"
             aria-label="Pretraga"
-            className="text-white/76 hover:bg-white/[0.08] hover:text-white"
+            className="hidden text-white/76 hover:bg-white/[0.08] hover:text-white sm:inline-flex"
           >
             <SearchIcon />
           </Button>

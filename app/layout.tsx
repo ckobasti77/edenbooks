@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Literata, Manrope } from "next/font/google";
 import { brand } from "@/lib/constants/brand";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const literata = Literata({
+  variable: "--font-literata",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: `${brand.name} | ${brand.tagline}`,
   description:
-    "Premium digitalna platforma za otkrivanje, čitanje i slušanje knjiga bilo kad i bilo gde.",
+    "Mirna digitalna biblioteka za e-knjige, audio knjige i lične preporuke.",
 };
 
 export default function RootLayout({
@@ -27,9 +35,11 @@ export default function RootLayout({
   return (
     <html
       lang="sr-Latn"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${fraunces.variable} ${literata.variable} ${manrope.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full bg-background font-sans text-foreground">
+      <body
+        className={`${fraunces.variable} ${literata.variable} ${manrope.variable} min-h-full bg-background font-sans text-foreground`}
+      >
         {children}
       </body>
     </html>

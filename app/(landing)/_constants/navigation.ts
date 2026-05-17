@@ -4,23 +4,23 @@ export const navigationLinks = [
     href: "#pocetna",
   },
   {
-    label: "Knjige",
+    label: "Biblioteka",
     href: "#biblioteka",
   },
   {
-    label: "Audio knjige",
+    label: "Audio",
     href: "#audio-knjige",
   },
   {
-    label: "Kategorije",
+    label: "Preporuke",
     href: "#preporuke",
   },
   {
-    label: "Top liste",
+    label: "Paketi",
     href: "#paketi",
   },
   {
-    label: "Aplikacija",
+    label: "Uređaji",
     href: "#uredjaji",
   },
 ] as const

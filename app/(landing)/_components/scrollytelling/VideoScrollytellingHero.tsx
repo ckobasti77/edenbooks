@@ -1,50 +1,78 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Inter, Playfair_Display } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AnimatedText from "@/components/animated-text";
+import { landingCopy } from "../../_constants/landing-copy";
 import { useSmoothScroll } from "../../_providers/SmoothScrollProvider";
-
-const playfair = Playfair_Display({
-  subsets: ["latin", "latin-ext"],
-  weight: ["600", "700"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FRAME_COUNT = 180;
-const FRAME_PATH = "/images/eden-frames";
-const STOP_FRAMES = [1, 60, 120, 180];
+const FRAME_PATH_DESKTOP = "/images/eden-frames";
+const FRAME_PATH_MOBILE = "/images/eden-frames-mobile";
+const FRAME_PATHS = {
+  desktop: FRAME_PATH_DESKTOP,
+  mobile: FRAME_PATH_MOBILE,
+} as const;
+
+type FrameVariant = keyof typeof FRAME_PATHS;
+
+const FRAME_COUNTS: Record<FrameVariant, number> = {
+  desktop: 183,
+  mobile: 212,
+};
+const STOP_FRAMES_BY_VARIANT: Record<FrameVariant, number[]> = {
+  desktop: [1, 70, 142, 183],
+  mobile: [1, 70, 142, 212],
+};
 const TRANSITION_DURATION = 1.25;
 const REDUCED_MOTION_DURATION = 0.01;
 const TOUCH_SWIPE_THRESHOLD = 30;
 const SCROLL_EPSILON = 2;
 const DRIFT_CORRECTION_DELAY = 80;
 const EXIT_RELEASE_DURATION = 900;
-const TEXT_REVEAL_DELAY = 140;
-const FRAME_STAGE_SCALE = 0.82;
+const TEXT_REVEAL_DELAY = 50;
 const LOGO_BLUE = "#1075AD";
 const LOGO_BLUE_LIGHT = "#58A9DB";
 const LOGO_BLUE_GLOW = "rgba(16,117,173,0.52)";
 const FRAME_EDGE_FADE_BACKGROUND =
   "linear-gradient(90deg,#020615 0%,#020615 9%,rgba(2,6,21,0.9) 13%,rgba(2,6,21,0.54) 19%,transparent 29%,transparent 71%,rgba(2,6,21,0.54) 81%,rgba(2,6,21,0.9) 87%,#020615 91%,#020615 100%),linear-gradient(180deg,#020615 0%,#020615 7%,rgba(2,6,21,0.86) 11%,rgba(2,6,21,0.46) 18%,transparent 28%,transparent 73%,rgba(2,6,21,0.5) 84%,rgba(2,6,21,0.9) 91%,#020615 96%,#020615 100%)";
 
-const HQ_FRAME_PATHS: Record<number, string> = {
-  1: "/images/eden-frames/001.webp",
-  60: "/images/eden-frames/060.webp",
-  120: "/images/eden-frames/120.webp",
-  180: "/images/eden-frames/180.webp",
-};
+/** Desktop breakpoint (matches Tailwind lg); tablet and phone use mobile frames. */
+const DESKTOP_FRAME_BREAKPOINT = 1024;
+/** Batch size for lazy-loading non-priority frames */
+const LAZY_BATCH_SIZE = 6;
+/** Delay between lazy batches (ms) */
+const LAZY_BATCH_DELAY = 60;
+const MOBILE_FRAME_WIDTH_RATIO = 0.94;
+
+function getFrameVariantForViewport(): FrameVariant {
+  if (typeof window === "undefined") return "desktop";
+  return window.innerWidth >= DESKTOP_FRAME_BREAKPOINT ? "desktop" : "mobile";
+}
+
+function getFrameBasePath(variant: FrameVariant) {
+  return FRAME_PATHS[variant];
+}
+
+function getFrameCount(variant: FrameVariant) {
+  return FRAME_COUNTS[variant];
+}
+
+function getStopFrames(variant: FrameVariant) {
+  return STOP_FRAMES_BY_VARIANT[variant];
+}
+
+function getHqFramePaths(variant: FrameVariant): Record<number, string> {
+  const base = getFrameBasePath(variant);
+  return Object.fromEntries(
+    getStopFrames(variant).map((frame) => [
+      frame,
+      `${base}/${String(frame).padStart(3, "0")}.webp`,
+    ]),
+  );
+}
 
 type FrameObject = {
   currentFrame: number;
@@ -61,46 +89,11 @@ type ScrollyCopySection = {
 };
 
 const scrollyCopySections: ScrollyCopySection[] = [
-  {
-    key: "digital-reading",
-    eyebrow: "Digitalna biblioteka",
-    title: "Čitaj knjige kao da su već u tvojoj biblioteci.",
-    text: "Premium katalog se otvara odmah, direktno na telefonu, bez čekanja i bez komplikacija.",
-    cta: "Započni čitanje",
-    href: "#biblioteka",
-    position: "left",
-  },
-  {
-    key: "library-opening",
-    eyebrow: "Premium kolekcija",
-    title: "Biblioteka se otvara oko tvog ekrana.",
-    text: "Naslovi izlaze iz prostora oko telefona i pretvaraju katalog u elegantan, jasan trenutak otkrivanja.",
-    cta: "Pogledaj naslove",
-    href: "#kolekcija",
-    position: "bottom-right",
-  },
-  {
-    key: "reader-mode",
-    eyebrow: "Reader mode",
-    title: "Knjiga ulazi u ekran i odmah je spremna.",
-    text: "Od izbora do čitanja, iskustvo ostaje brzo, mirno i napravljeno za korisnike koji žele sadržaj odmah.",
-    cta: "Vidi iskustvo",
-    href: "#iskustvo",
-    position: "bottom-left",
-  },
-  {
-    key: "audio-books",
-    eyebrow: "Audio knjige",
-    title: "Kada ne možeš da čitaš - slušaj.",
-    text: "Audio knjige prate korisnika u pokretu, dok vizuelni talasi iz telefona jasno pokazuju da EdenBooks nije samo čitanje.",
-    cta: "Pogledaj audio iskustvo",
-    href: "#audio",
-    position: "bottom-center",
-  },
+  ...landingCopy.scrollytelling,
 ];
 
-function getFrameSrc(frame: number) {
-  return `${FRAME_PATH}/${String(frame).padStart(3, "0")}.webp`;
+function getFrameSrc(frame: number, basePath: string) {
+  return `${basePath}/${String(frame).padStart(3, "0")}.webp`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -113,18 +106,18 @@ function easeInOutSine(progress: number) {
 
 function getPanelPositionClass(position: ScrollyCopySection["position"]) {
   if (position === "bottom-left") {
-    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-12 md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-16 xl:left-20";
+    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-[6vw] md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-[6vw] xl:left-[6vw]";
   }
 
   if (position === "bottom-right") {
-    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-auto md:right-12 md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:right-16 xl:right-20";
+    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-auto md:right-[6vw] md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:right-[6vw] xl:right-[6vw]";
   }
 
   if (position === "bottom-center") {
-    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-1/2 md:right-auto md:top-auto md:bottom-[1.5vh] md:-translate-x-1/2 md:translate-y-0";
+    return "left-5 right-5 bottom-[1.5vh] md:left-1/2 md:right-auto md:top-auto md:bottom-[2vh] md:-translate-x-1/2 md:translate-y-0";
   }
 
-  return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-12 md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-16 xl:left-20";
+  return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-[6vw] md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-[6vw] xl:left-[6vw]";
 }
 
 function drawImageCover(
@@ -172,13 +165,69 @@ function drawImageCover(
   );
 }
 
+function drawImageInsetWidth(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  canvasWidth: number,
+  canvasHeight: number,
+) {
+  const imageWidth = image.naturalWidth || image.width;
+  const imageHeight = image.naturalHeight || image.height;
+
+  if (!imageWidth || !imageHeight || !canvasWidth || !canvasHeight) {
+    return;
+  }
+
+  const imageRatio = imageWidth / imageHeight;
+  const destinationWidth = canvasWidth * MOBILE_FRAME_WIDTH_RATIO;
+  const destinationHeight = destinationWidth / imageRatio;
+  const destinationX = (canvasWidth - destinationWidth) / 2;
+  const destinationY = (canvasHeight - destinationHeight) / 2;
+
+  context.clearRect(0, 0, canvasWidth, canvasHeight);
+  context.fillStyle = "#020615";
+  context.fillRect(0, 0, canvasWidth, canvasHeight);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(
+    image,
+    0,
+    0,
+    imageWidth,
+    imageHeight,
+    destinationX,
+    destinationY,
+    destinationWidth,
+    destinationHeight,
+  );
+}
+
 function VideoScrollytellingHero() {
   const smoothScrollRef = useSmoothScroll();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sectionRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const imagesRef = useRef<Array<HTMLImageElement | null>>([]);
-  const hqImagesRef = useRef<Record<number, HTMLImageElement | null>>({});
+  const imagesByVariantRef = useRef<
+    Record<FrameVariant, Array<HTMLImageElement | null>>
+  >({
+    desktop: [],
+    mobile: [],
+  });
+  const hqImagesByVariantRef = useRef<
+    Record<FrameVariant, Record<number, HTMLImageElement | null>>
+  >({
+    desktop: {},
+    mobile: {},
+  });
+  const loadingFramesRef = useRef<Record<FrameVariant, Set<number>>>({
+    desktop: new Set<number>(),
+    mobile: new Set<number>(),
+  });
+  const loadingHqFramesRef = useRef<Record<FrameVariant, Set<number>>>({
+    desktop: new Set<number>(),
+    mobile: new Set<number>(),
+  });
+  const activeFrameVariantRef = useRef<FrameVariant>("desktop");
   const frameObjRef = useRef<FrameObject>({ currentFrame: 1 });
   const activeSectionRef = useRef(0);
   const currentStopRef = useRef(0);
@@ -189,6 +238,7 @@ function VideoScrollytellingHero() {
   const copyRevealTimerRef = useRef<number | null>(null);
   const canvasSizeRef = useRef({ width: 0, height: 0 });
   const [activeSection, setActiveSection] = useState(0);
+  const [frameVariant, setFrameVariant] = useState<FrameVariant | null>(null);
   const [copyRevealSection, setCopyRevealSection] = useState<number | null>(
     null,
   );
@@ -207,15 +257,20 @@ function VideoScrollytellingHero() {
     }
 
     const exactFrame = frameObjRef.current.currentFrame;
-    const requestedFrame = clamp(Math.round(exactFrame), 1, FRAME_COUNT);
+    const activeVariant = activeFrameVariantRef.current;
+    const frameCount = getFrameCount(activeVariant);
+    const stopFrames = getStopFrames(activeVariant);
+    const requestedFrame = clamp(Math.round(exactFrame), 1, frameCount);
+    const activeImages = imagesByVariantRef.current[activeVariant];
+    const activeHqImages = hqImagesByVariantRef.current[activeVariant];
 
-    let image = imagesRef.current[requestedFrame - 1];
+    let image = activeImages[requestedFrame - 1];
 
-    const isAtStopFrame = STOP_FRAMES.includes(requestedFrame);
+    const isAtStopFrame = stopFrames.includes(requestedFrame);
     const distanceToStop = Math.abs(exactFrame - requestedFrame);
 
     if (isAtStopFrame && distanceToStop < 0.01) {
-      const hqImage = hqImagesRef.current[requestedFrame];
+      const hqImage = activeHqImages[requestedFrame];
 
       if (hqImage?.complete && hqImage.naturalWidth) {
         image = hqImage;
@@ -223,9 +278,9 @@ function VideoScrollytellingHero() {
     }
 
     if (!image?.complete || !image.naturalWidth) {
-      for (let offset = 1; offset < FRAME_COUNT; offset += 1) {
-        const previousImage = imagesRef.current[requestedFrame - 1 - offset];
-        const nextImage = imagesRef.current[requestedFrame - 1 + offset];
+      for (let offset = 1; offset < frameCount; offset += 1) {
+        const previousImage = activeImages[requestedFrame - 1 - offset];
+        const nextImage = activeImages[requestedFrame - 1 + offset];
 
         if (previousImage?.complete && previousImage.naturalWidth) {
           image = previousImage;
@@ -240,10 +295,15 @@ function VideoScrollytellingHero() {
     }
 
     if (!image?.complete || !image.naturalWidth) {
+      context.fillStyle = "#020615";
+      context.fillRect(0, 0, canvas.width, canvas.height);
       return;
     }
 
-    drawImageCover(
+    const drawFrame =
+      activeVariant === "mobile" ? drawImageInsetWidth : drawImageCover;
+
+    drawFrame(
       context,
       image,
       canvasSizeRef.current.width,
@@ -252,52 +312,164 @@ function VideoScrollytellingHero() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    const updateFrameVariant = () => {
+      const nextVariant = getFrameVariantForViewport();
+
+      activeFrameVariantRef.current = nextVariant;
+      setFrameVariant(nextVariant);
+      renderFrame();
+    };
+
+    updateFrameVariant();
+
+    const mediaQuery = window.matchMedia(
+      `(min-width: ${DESKTOP_FRAME_BREAKPOINT}px)`,
+    );
+    const handleMediaChange = () => updateFrameVariant();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleMediaChange);
+    } else {
+      mediaQuery.addListener(handleMediaChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      } else {
+        mediaQuery.removeListener(handleMediaChange);
+      }
+    };
+  }, [renderFrame]);
+
+  useEffect(() => {
+    if (!frameVariant) {
+      return;
+    }
+
+    let isActiveVariant = true;
+    const batchTimers: ReturnType<typeof setTimeout>[] = [];
+    const basePath = getFrameBasePath(frameVariant);
+    const frameCount = getFrameCount(frameVariant);
+    const stopFrames = getStopFrames(frameVariant);
+    const frameImages = imagesByVariantRef.current[frameVariant];
+    const hqImages = hqImagesByVariantRef.current[frameVariant];
+    const loadingFrames = loadingFramesRef.current[frameVariant];
+    const loadingHqFrames = loadingHqFramesRef.current[frameVariant];
+
+    activeFrameVariantRef.current = frameVariant;
+    renderFrame();
 
     const loadFrame = (frame: number, source: string) => {
+      const cachedImage = frameImages[frame - 1];
+
+      if (
+        (cachedImage?.complete && cachedImage.naturalWidth) ||
+        loadingFrames.has(frame)
+      ) {
+        return;
+      }
+
       const image = new Image();
 
+      loadingFrames.add(frame);
       image.decoding = "async";
-      image.loading = "eager";
 
       image.onload = () => {
-        if (!isMounted) {
-          return;
-        }
+        loadingFrames.delete(frame);
+        frameImages[frame - 1] = image;
 
-        imagesRef.current[frame - 1] = image;
-        renderFrame();
+        if (isActiveVariant && activeFrameVariantRef.current === frameVariant) {
+          renderFrame();
+        }
+      };
+
+      image.onerror = () => {
+        loadingFrames.delete(frame);
       };
 
       image.src = source;
     };
 
-    for (let frame = 1; frame <= FRAME_COUNT; frame += 1) {
-      loadFrame(frame, getFrameSrc(frame));
+    // Phase 1: load stop frames for the active viewport immediately.
+    const prioritySet = new Set(stopFrames);
+    for (const stopFrame of stopFrames) {
+      loadFrame(stopFrame, getFrameSrc(stopFrame, basePath));
     }
 
-    Object.entries(HQ_FRAME_PATHS).forEach(([frameStr, src]) => {
+    // Phase 2: lazily load the rest of the active viewport set.
+    const remainingFrames: number[] = [];
+    for (let frame = 1; frame <= frameCount; frame += 1) {
+      if (!prioritySet.has(frame)) {
+        remainingFrames.push(frame);
+      }
+    }
+
+    const loadBatch = (batchIndex: number) => {
+      if (!isActiveVariant) return;
+
+      const start = batchIndex * LAZY_BATCH_SIZE;
+      const end = Math.min(start + LAZY_BATCH_SIZE, remainingFrames.length);
+
+      if (start >= remainingFrames.length) return;
+
+      for (let i = start; i < end; i++) {
+        const frame = remainingFrames[i];
+        loadFrame(frame, getFrameSrc(frame, basePath));
+      }
+
+      if (end < remainingFrames.length) {
+        const timer = setTimeout(
+          () => loadBatch(batchIndex + 1),
+          LAZY_BATCH_DELAY,
+        );
+        batchTimers.push(timer);
+      }
+    };
+
+    const startTimer = setTimeout(() => loadBatch(0), 100);
+    batchTimers.push(startTimer);
+
+    // Phase 3: load crisp stop frames for the active viewport only.
+    const hqPaths = getHqFramePaths(frameVariant);
+    Object.entries(hqPaths).forEach(([frameStr, src]) => {
       const frameNum = parseInt(frameStr, 10);
+      const cachedImage = hqImages[frameNum];
+
+      if (
+        (cachedImage?.complete && cachedImage.naturalWidth) ||
+        loadingHqFrames.has(frameNum)
+      ) {
+        return;
+      }
+
       const img = new Image();
 
+      loadingHqFrames.add(frameNum);
       img.decoding = "async";
       img.onload = () => {
-        if (isMounted) {
-          hqImagesRef.current[frameNum] = img;
+        loadingHqFrames.delete(frameNum);
+        hqImages[frameNum] = img;
 
-          if (Math.round(frameObjRef.current.currentFrame) === frameNum) {
-            renderFrame();
-          }
+        if (
+          isActiveVariant &&
+          activeFrameVariantRef.current === frameVariant &&
+          Math.round(frameObjRef.current.currentFrame) === frameNum
+        ) {
+          renderFrame();
         }
+      };
+      img.onerror = () => {
+        loadingHqFrames.delete(frameNum);
       };
       img.src = src;
     });
 
     return () => {
-      isMounted = false;
-      imagesRef.current = [];
+      isActiveVariant = false;
+      batchTimers.forEach(clearTimeout);
     };
-  }, [renderFrame]);
+  }, [frameVariant, renderFrame]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -361,13 +533,15 @@ function VideoScrollytellingHero() {
       return;
     }
 
+    const activeVariant = frameVariant ?? activeFrameVariantRef.current;
+    const stopFrames = getStopFrames(activeVariant);
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const transitionDuration = prefersReducedMotion
       ? REDUCED_MOTION_DURATION
       : TRANSITION_DURATION;
-    const maxStopIndex = STOP_FRAMES.length - 1;
+    const maxStopIndex = stopFrames.length - 1;
 
     const clearCopyRevealTimer = () => {
       if (copyRevealTimerRef.current !== null) {
@@ -495,7 +669,7 @@ function VideoScrollytellingHero() {
 
       currentStopRef.current = nextIndex;
       revealSettledPanel(nextIndex);
-      frameObject.currentFrame = STOP_FRAMES[nextIndex];
+      frameObject.currentFrame = stopFrames[nextIndex];
       renderFrame();
 
       if (
@@ -523,7 +697,7 @@ function VideoScrollytellingHero() {
     const goToStop = (index: number) => {
       const nextIndex = clamp(index, 0, maxStopIndex);
       const targetScroll = getStopPosition(nextIndex);
-      const targetFrame = STOP_FRAMES[nextIndex];
+      const targetFrame = stopFrames[nextIndex];
       const isAlreadySettled =
         currentStopRef.current === nextIndex &&
         Math.abs(window.scrollY - targetScroll) <= SCROLL_EPSILON &&
@@ -840,38 +1014,46 @@ function VideoScrollytellingHero() {
       window.removeEventListener("resize", handleResize);
       stepZoneTrigger.kill();
     };
-  }, [renderFrame, smoothScrollRef]);
+  }, [frameVariant, renderFrame, smoothScrollRef]);
 
   return (
     <section
       id="pocetna"
       aria-label="EdenBooks canvas scrollytelling"
-      className={`${inter.variable} ${playfair.variable} relative isolate bg-[#020615] text-white [--font-sans:var(--font-inter)] font-sans`}
+      className="relative isolate bg-[#020615] font-sans text-white"
     >
+      <span id="preporuke" className="absolute top-[225vh]" aria-hidden="true" />
+      <span id="audio-knjige" className="absolute top-[300vh]" aria-hidden="true" />
       <div ref={rootRef} className="relative h-[400vh] overflow-clip">
         <div className="sticky top-0 h-screen overflow-hidden bg-[#020615]">
           <canvas
             ref={canvasRef}
-            className="pointer-events-none block h-full w-full origin-center transition-transform duration-700 ease-out will-change-transform"
-            style={{
-              transform: `scale(${FRAME_STAGE_SCALE})`,
-            }}
+            className="pointer-events-none block h-full w-full origin-center scale-100 transition-transform duration-700 ease-out will-change-transform lg:scale-[0.82]"
             aria-hidden="true"
           />
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-[1]"
+            className="pointer-events-none absolute inset-0 z-[1] md:hidden"
+            style={{
+              background:
+                "linear-gradient(180deg,#020615 0%,#020615 7%,rgba(2,6,21,0.92) 12%,rgba(2,6,21,0.56) 18%,transparent 30%,transparent 70%,rgba(2,6,21,0.56) 82%,rgba(2,6,21,0.92) 89%,#020615 94%,#020615 100%)",
+            }}
+          />
+
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[1] hidden lg:block"
             style={{ background: FRAME_EDGE_FADE_BACKGROUND }}
           />
           <div
             aria-hidden="true"
-            className={`pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[70vh] transition-opacity duration-700 ease-out ${
+            className={`pointer-events-none absolute inset-0 z-[2] transition-opacity duration-700 ease-out ${
               activeSection === 3 ? "opacity-100" : "opacity-0"
             }`}
             style={{
               background:
-                "linear-gradient(180deg, rgba(2,6,21,0) 0%, rgba(2,6,21,0.9) 25%, #020615 45%, #020615 100%)",
+                "linear-gradient(180deg, transparent 0%, transparent 52%, rgba(2,6,21,0.18) 64%, rgba(2,6,21,0.48) 82%, rgba(2,6,21,0.66) 100%)",
             }}
           />
 
@@ -880,30 +1062,21 @@ function VideoScrollytellingHero() {
             const isActive = activeSection === index;
             const shouldRevealCopy = copyRevealSection === index;
             const isCentered = section.position === "bottom-center";
-            const isBottomSide =
-              section.position === "bottom-left" ||
-              section.position === "bottom-right";
-            const isBottomPlacement = section.position !== "left";
+            const isAudioOutro = index === 3;
             const alignClass = isCentered
               ? "mx-auto text-center"
               : section.position === "bottom-right"
                 ? "ml-auto mr-0 text-right"
                 : "mx-0 text-left";
-            const panelSizeClass = isBottomPlacement
-              ? isCentered
-                ? "max-w-[38rem] md:w-[38rem]"
-                : "max-w-[25rem] md:w-[31vw]"
-              : "max-w-[26rem] md:w-[31vw]";
+            const panelSizeClass = isCentered
+              ? "max-w-[90vw] md:w-auto md:max-w-none"
+              : "max-w-[30rem] md:w-[38vw] md:max-w-[34rem] lg:max-w-[36rem]";
             const titleSizeClass = isCentered
-              ? "h-[4.6rem] text-[1.85rem] leading-[1] md:h-[4.9rem] md:text-[2.08rem] md:leading-[1] lg:h-[5.1rem] lg:text-[2.18rem] lg:leading-[1]"
-              : isBottomSide
-                ? "h-[8.2rem] text-[2.05rem] leading-[0.98] md:h-[8.5rem] md:text-[2.25rem] md:leading-[0.98] lg:h-[8.8rem] lg:text-[2.35rem] lg:leading-[0.98]"
-                : "h-[9.3rem] text-[2.35rem] leading-[0.96] md:h-[9.7rem] md:text-[2.68rem] md:leading-[0.96] lg:h-[10rem] lg:text-[2.78rem] lg:leading-[0.96]";
+              ? "whitespace-nowrap text-[1.3rem] leading-[1.1] md:text-[1.7rem] md:leading-[1.1] lg:text-[2.1rem] lg:leading-[1.1] xl:text-[2.3rem]"
+              : "text-[2.4rem] leading-[1.02] md:text-[2.9rem] md:leading-[1.02] lg:text-[3.2rem] lg:leading-[1.02] xl:text-[3.5rem] xl:leading-[1.02]";
             const bodySizeClass = isCentered
-              ? "mt-3 h-[3rem] max-w-[32rem] text-sm leading-snug md:mt-4 md:h-[3.2rem] md:text-sm md:leading-snug lg:h-[3.4rem] lg:text-base lg:leading-snug"
-              : isBottomSide
-                ? "mt-4 h-[4.8rem] max-w-[23rem] text-sm leading-relaxed md:mt-5 md:h-[5rem] md:text-sm md:leading-relaxed lg:h-[5.2rem] lg:text-base lg:leading-relaxed"
-                : "mt-5 h-[5.2rem] max-w-[25rem] text-sm leading-relaxed md:mt-6 md:h-[5.4rem] md:text-base md:leading-relaxed lg:h-[5.6rem] lg:text-base lg:leading-relaxed";
+              ? "mt-2 whitespace-nowrap text-xs leading-relaxed md:mt-3 md:text-sm md:leading-relaxed lg:text-base lg:leading-relaxed"
+              : "mt-5 max-w-[30rem] text-base leading-relaxed md:mt-6 md:text-lg md:leading-relaxed lg:text-lg lg:leading-relaxed";
             const ctaRevealClass = shouldRevealCopy
               ? "pointer-events-auto opacity-100"
               : "pointer-events-none opacity-0";
@@ -925,6 +1098,18 @@ function VideoScrollytellingHero() {
                   }`}
                   aria-hidden={!isActive}
                 >
+                  {isAudioOutro ? (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-[-1.2rem] inset-y-[-0.9rem] rounded-[2rem] bg-[#061327]/34 shadow-[0_22px_72px_rgba(2,6,21,0.26)] backdrop-blur-xl md:inset-x-[-2.4rem] md:inset-y-[-1.4rem]"
+                      style={{
+                        WebkitMaskImage:
+                          "radial-gradient(ellipse at center, #000 0%, #000 48%, rgba(0,0,0,0.72) 66%, transparent 100%)",
+                        maskImage:
+                          "radial-gradient(ellipse at center, #000 0%, #000 48%, rgba(0,0,0,0.72) 66%, transparent 100%)",
+                      }}
+                    />
+                  ) : null}
                   <div
                     className="relative z-10 flex flex-col items-center justify-center py-6 text-center md:py-8"
                   >
@@ -945,15 +1130,15 @@ function VideoScrollytellingHero() {
                               key={`${section.key}-eyebrow-${copyRevealSection}`}
                               text={section.eyebrow}
                               animationType="words"
-                              duration={0.42}
-                              delay={0.02}
-                              staggerDelay={0.045}
+                              duration={0.32}
+                              delay={0.0}
+                              staggerDelay={0.03}
                               initialY={8}
-                              className={`mb-3 h-5 max-w-none transform-gpu font-sans text-xs font-semibold uppercase leading-none [letter-spacing:0] md:h-6 md:text-xs lg:h-6 lg:text-sm ${alignClass}`}
+                              className={`mb-4 max-w-none transform-gpu font-sans text-sm font-bold uppercase leading-none [letter-spacing:0.04em] md:mb-5 md:text-sm lg:text-base ${alignClass}`}
                             />
                           ) : (
                             <p
-                              className={`mb-3 h-5 max-w-none transform-gpu font-sans text-xs font-semibold uppercase leading-none opacity-0 [letter-spacing:0] md:h-6 md:text-xs lg:h-6 lg:text-sm ${alignClass}`}
+                              className={`mb-4 max-w-none transform-gpu font-sans text-sm font-bold uppercase leading-none opacity-0 [letter-spacing:0.04em] md:mb-5 md:text-sm lg:text-base ${alignClass}`}
                             >
                               {section.eyebrow}
                             </p>
@@ -970,15 +1155,15 @@ function VideoScrollytellingHero() {
                               key={`${section.key}-title-${copyRevealSection}`}
                               text={section.title}
                               animationType="words"
-                              duration={0.48}
-                              delay={0.06}
-                              staggerDelay={0.055}
+                              duration={0.36}
+                              delay={0.02}
+                              staggerDelay={0.035}
                               initialY={14}
-                              className={`max-w-none transform-gpu font-sans font-bold text-white [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
+                              className={`max-w-none transform-gpu font-medium text-white [font-family:var(--font-display)] [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
                             />
                           ) : (
                             <p
-                              className={`max-w-none transform-gpu font-sans font-bold text-white opacity-0 [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
+                              className={`max-w-none transform-gpu font-medium text-white opacity-0 [font-family:var(--font-display)] [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
                             >
                               {section.title}
                             </p>
@@ -989,15 +1174,15 @@ function VideoScrollytellingHero() {
                             key={`${section.key}-text-${copyRevealSection}`}
                             text={section.text}
                             animationType="words"
-                            duration={0.4}
-                            delay={0.16}
-                            staggerDelay={0.024}
+                            duration={0.32}
+                            delay={0.06}
+                            staggerDelay={0.016}
                             initialY={10}
-                            className={`transform-gpu font-sans font-medium text-slate-200/85 [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
+                            className={`transform-gpu font-normal text-slate-200/85 [font-family:var(--font-reading)] [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
                           />
                         ) : (
                           <p
-                            className={`transform-gpu font-sans font-medium text-slate-200/85 opacity-0 [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
+                            className={`transform-gpu font-normal text-slate-200/85 opacity-0 [font-family:var(--font-reading)] [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
                           >
                             {section.text}
                           </p>
@@ -1006,7 +1191,7 @@ function VideoScrollytellingHero() {
                       <a
                         data-scrolly-cta
                         href={section.href}
-                        className={`mt-8 inline-flex h-12 w-fit origin-center items-center justify-center rounded-full border bg-[#1075AD]/15 px-7 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(16,117,173,0.18),0_0_34px_rgba(16,117,173,0.52),inset_0_0_16px_rgba(88,169,219,0.08)] transition-[border-color,box-shadow,color,background-color,transform,opacity] duration-300 hover:-translate-y-0.5 hover:border-[#58A9DB] hover:bg-[#1075AD]/25 hover:shadow-[0_0_0_1px_rgba(88,169,219,0.28),0_0_48px_rgba(16,117,173,0.58),inset_0_0_18px_rgba(88,169,219,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1075AD]/45 md:mt-10 md:h-[3.35rem] md:px-10 md:text-base ${ctaRevealClass}`}
+                        className={`mt-8 inline-flex h-[3.2rem] w-fit origin-center items-center justify-center rounded-full border bg-[#1075AD]/15 px-8 text-base font-bold text-white shadow-[0_0_0_1px_rgba(16,117,173,0.18),0_0_34px_rgba(16,117,173,0.52),inset_0_0_16px_rgba(88,169,219,0.08)] transition-[border-color,box-shadow,color,background-color,transform,opacity] duration-300 [font-family:var(--font-ui)] hover:-translate-y-0.5 hover:border-[#58A9DB] hover:bg-[#1075AD]/25 hover:shadow-[0_0_0_1px_rgba(88,169,219,0.28),0_0_48px_rgba(16,117,173,0.58),inset_0_0_18px_rgba(88,169,219,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1075AD]/45 md:mt-10 md:h-[3.6rem] md:px-12 md:text-lg ${ctaRevealClass}`}
                         style={{
                           borderColor: LOGO_BLUE,
                         }}

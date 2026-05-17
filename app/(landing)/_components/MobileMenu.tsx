@@ -56,7 +56,7 @@ function MobileMenu() {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="border-white/10 bg-[#050914]/96 text-white backdrop-blur-xl"
+        className="border-white/10 bg-[#050914]/96 text-white backdrop-blur-xl [font-family:var(--font-ui)]"
       >
         <SheetHeader>
           <SheetTitle className="sr-only">EDEN BOOKS meni</SheetTitle>
@@ -68,7 +68,7 @@ function MobileMenu() {
             <SheetClose asChild key={link.href}>
               <a
                 href={link.href}
-                className="rounded-lg px-3 py-3 text-base text-white/76 transition-colors hover:bg-white/[0.08] hover:text-white"
+                className="rounded-lg px-3 py-3 text-base font-bold text-white/76 transition-colors hover:bg-white/[0.08] hover:text-white"
               >
                 {link.label}
               </a>
