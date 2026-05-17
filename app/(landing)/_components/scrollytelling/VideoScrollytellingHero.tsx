@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Inter, Playfair_Display } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import AnimatedText from "@/components/animated-text";
 import { useSmoothScroll } from "../../_providers/SmoothScrollProvider";
 
 const playfair = Playfair_Display({
@@ -30,13 +31,11 @@ const TOUCH_SWIPE_THRESHOLD = 30;
 const SCROLL_EPSILON = 2;
 const DRIFT_CORRECTION_DELAY = 80;
 const EXIT_RELEASE_DURATION = 900;
+const TEXT_REVEAL_DELAY = 140;
 const FRAME_STAGE_SCALE = 0.82;
 const LOGO_BLUE = "#1075AD";
 const LOGO_BLUE_LIGHT = "#58A9DB";
 const LOGO_BLUE_GLOW = "rgba(16,117,173,0.52)";
-const LIQUID_POP_FILTER_IN = "url(#eden-liquid-pop-threshold) blur(0px)";
-const LIQUID_POP_FILTER_OUT = "url(#eden-liquid-pop-threshold) blur(18px)";
-const LIQUID_SCREEN_REVEAL_OFFSET = 54;
 const FRAME_EDGE_FADE_BACKGROUND =
   "linear-gradient(90deg,#020615 0%,#020615 9%,rgba(2,6,21,0.9) 13%,rgba(2,6,21,0.54) 19%,transparent 29%,transparent 71%,rgba(2,6,21,0.54) 81%,rgba(2,6,21,0.9) 87%,#020615 91%,#020615 100%),linear-gradient(180deg,#020615 0%,#020615 7%,rgba(2,6,21,0.86) 11%,rgba(2,6,21,0.46) 18%,transparent 28%,transparent 73%,rgba(2,6,21,0.5) 84%,rgba(2,6,21,0.9) 91%,#020615 96%,#020615 100%)";
 
@@ -128,25 +127,6 @@ function getPanelPositionClass(position: ScrollyCopySection["position"]) {
   return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-12 md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-16 xl:left-20";
 }
 
-function LiquidPopFilter() {
-  return (
-    <svg aria-hidden="true" className="hidden" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <filter id="eden-liquid-pop-threshold">
-          <feColorMatrix
-            in="SourceGraphic"
-            type="matrix"
-            values="1 0 0 0 0
-                    0 1 0 0 0
-                    0 0 1 0 0
-                    0 0 0 255 -140"
-          />
-        </filter>
-      </defs>
-    </svg>
-  );
-}
-
 function drawImageCover(
   context: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -206,8 +186,12 @@ function VideoScrollytellingHero() {
   const isInStepZoneRef = useRef(false);
   const touchStartYRef = useRef(0);
   const exitReleaseUntilRef = useRef(0);
+  const copyRevealTimerRef = useRef<number | null>(null);
   const canvasSizeRef = useRef({ width: 0, height: 0 });
   const [activeSection, setActiveSection] = useState(0);
+  const [copyRevealSection, setCopyRevealSection] = useState<number | null>(
+    null,
+  );
 
   const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
@@ -385,49 +369,34 @@ function VideoScrollytellingHero() {
       : TRANSITION_DURATION;
     const maxStopIndex = STOP_FRAMES.length - 1;
 
-    const getLiquidRevealOffset = (index: number) => {
-      const position = scrollyCopySections[index]?.position;
-
-      if (position === "bottom-right") {
-        return { x: -LIQUID_SCREEN_REVEAL_OFFSET, y: 0 };
+    const clearCopyRevealTimer = () => {
+      if (copyRevealTimerRef.current !== null) {
+        window.clearTimeout(copyRevealTimerRef.current);
+        copyRevealTimerRef.current = null;
       }
-
-      if (position === "bottom-center") {
-        return { x: 0, y: LIQUID_SCREEN_REVEAL_OFFSET * 0.5 };
-      }
-
-      return { x: LIQUID_SCREEN_REVEAL_OFFSET, y: 0 };
     };
 
-    const hideLiquidSection = (
-      liquidSection: HTMLElement,
-      index: number,
-      immediate = false,
-    ) => {
-      const offset = getLiquidRevealOffset(index);
+    const scheduleCopyReveal = (index: number) => {
+      clearCopyRevealTimer();
 
-      gsap.to(liquidSection, {
-        autoAlpha: 0,
-        filter: LIQUID_POP_FILTER_OUT,
-        scale: 0.94,
-        x: offset.x * 0.45,
-        y: offset.y || -10,
-        duration:
-          immediate || prefersReducedMotion ? REDUCED_MOTION_DURATION : 0.24,
-        ease: "power2.in",
-        overwrite: true,
-      });
+      if (prefersReducedMotion) {
+        setCopyRevealSection(index);
+        return;
+      }
+
+      copyRevealTimerRef.current = window.setTimeout(() => {
+        setCopyRevealSection(index);
+        copyRevealTimerRef.current = null;
+      }, TEXT_REVEAL_DELAY);
     };
 
     const preparePanelForTransition = (index: number) => {
+      clearCopyRevealTimer();
       activeSectionRef.current = index;
       setActiveSection(index);
 
       panels.forEach((panel, panelIndex) => {
         const isActive = panelIndex === index;
-        const liquidSection =
-          panel.querySelector<HTMLElement>("[data-liquid-section]");
-        const offset = getLiquidRevealOffset(panelIndex);
 
         if (isActive) {
           gsap.set(panel, {
@@ -444,35 +413,16 @@ function VideoScrollytellingHero() {
             overwrite: true,
           });
         }
-
-        if (!liquidSection) {
-          return;
-        }
-
-        if (isActive) {
-          gsap.set(liquidSection, {
-            autoAlpha: 0,
-            filter: LIQUID_POP_FILTER_OUT,
-            scale: 0.94,
-            transformOrigin: "50% 50%",
-            x: offset.x,
-            y: offset.y,
-          });
-        } else {
-          hideLiquidSection(liquidSection, panelIndex);
-        }
       });
     };
 
-    const revealSettledPanel = (index: number, animate: boolean) => {
+    const revealSettledPanel = (index: number) => {
       activeSectionRef.current = index;
       setActiveSection(index);
+      scheduleCopyReveal(index);
 
       panels.forEach((panel, panelIndex) => {
         const isActive = panelIndex === index;
-        const liquidSection =
-          panel.querySelector<HTMLElement>("[data-liquid-section]");
-        const offset = getLiquidRevealOffset(panelIndex);
 
         if (isActive) {
           gsap.set(panel, {
@@ -488,50 +438,6 @@ function VideoScrollytellingHero() {
             ease: "power2.out",
             overwrite: true,
           });
-        }
-
-        if (!liquidSection) {
-          return;
-        }
-
-        if (isActive && animate && !prefersReducedMotion) {
-          gsap.killTweensOf(liquidSection);
-          gsap
-            .timeline()
-            .fromTo(
-              liquidSection,
-              {
-                autoAlpha: 0,
-                filter: LIQUID_POP_FILTER_OUT,
-                scale: 0.94,
-                x: offset.x,
-                y: offset.y,
-              },
-              {
-                autoAlpha: 1,
-                duration: 0.33,
-                ease: "power2.out",
-              },
-            )
-            .to(liquidSection, {
-              autoAlpha: 1,
-              filter: LIQUID_POP_FILTER_IN,
-              scale: 1,
-              x: 0,
-              y: 0,
-              duration: 0.33,
-              ease: "power3.out",
-            });
-        } else if (isActive) {
-          gsap.set(liquidSection, {
-            autoAlpha: 1,
-            filter: LIQUID_POP_FILTER_IN,
-            scale: 1,
-            x: 0,
-            y: 0,
-          });
-        } else {
-          hideLiquidSection(liquidSection, panelIndex, !animate);
         }
       });
     };
@@ -588,7 +494,7 @@ function VideoScrollytellingHero() {
       const targetScroll = getStopPosition(nextIndex);
 
       currentStopRef.current = nextIndex;
-      revealSettledPanel(nextIndex, false);
+      revealSettledPanel(nextIndex);
       frameObject.currentFrame = STOP_FRAMES[nextIndex];
       renderFrame();
 
@@ -645,7 +551,7 @@ function VideoScrollytellingHero() {
         releaseTween = null;
         frameObject.currentFrame = targetFrame;
         renderFrame();
-        revealSettledPanel(nextIndex, true);
+        revealSettledPanel(nextIndex);
         isAnimatingRef.current = false;
       };
 
@@ -866,29 +772,6 @@ function VideoScrollytellingHero() {
       y: 0,
     });
 
-    const liquidSections = panels.flatMap((panel) =>
-      Array.from(panel.querySelectorAll<HTMLElement>("[data-liquid-section]")),
-    );
-
-    gsap.set(liquidSections, {
-      autoAlpha: 0,
-      filter: LIQUID_POP_FILTER_OUT,
-      scale: 0.985,
-      transformOrigin: "50% 50%",
-      y: 12,
-    });
-
-    const firstLiquidSections = Array.from(
-      panels[0]?.querySelectorAll<HTMLElement>("[data-liquid-section]") ?? [],
-    );
-
-    gsap.set(firstLiquidSections, {
-      autoAlpha: 1,
-      filter: LIQUID_POP_FILTER_IN,
-      scale: 1,
-      y: 0,
-    });
-
     setStopInstantly(getNearestStopIndex(), isInsideStepZone());
 
     const stepZoneTrigger = ScrollTrigger.create({
@@ -944,6 +827,7 @@ function VideoScrollytellingHero() {
     ScrollTrigger.refresh();
 
     return () => {
+      clearCopyRevealTimer();
       window.clearTimeout(driftCorrectionTimer);
       fallbackScrollTween?.kill();
       releaseTween?.kill();
@@ -966,8 +850,6 @@ function VideoScrollytellingHero() {
     >
       <div ref={rootRef} className="relative h-[400vh] overflow-clip">
         <div className="sticky top-0 h-screen overflow-hidden bg-[#020615]">
-          <LiquidPopFilter />
-
           <canvas
             ref={canvasRef}
             className="pointer-events-none block h-full w-full origin-center transition-transform duration-700 ease-out will-change-transform"
@@ -996,6 +878,7 @@ function VideoScrollytellingHero() {
           {scrollyCopySections.map((section, index) => {
             const Heading = index === 0 ? "h1" : "h2";
             const isActive = activeSection === index;
+            const shouldRevealCopy = copyRevealSection === index;
             const isCentered = section.position === "bottom-center";
             const isBottomSide =
               section.position === "bottom-left" ||
@@ -1021,6 +904,9 @@ function VideoScrollytellingHero() {
               : isBottomSide
                 ? "mt-4 h-[4.8rem] max-w-[23rem] text-sm leading-relaxed md:mt-5 md:h-[5rem] md:text-sm md:leading-relaxed lg:h-[5.2rem] lg:text-base lg:leading-relaxed"
                 : "mt-5 h-[5.2rem] max-w-[25rem] text-sm leading-relaxed md:mt-6 md:h-[5.4rem] md:text-base md:leading-relaxed lg:h-[5.6rem] lg:text-base lg:leading-relaxed";
+            const ctaRevealClass = shouldRevealCopy
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0";
 
             return (
               <div
@@ -1042,49 +928,85 @@ function VideoScrollytellingHero() {
                   <div
                     className="relative z-10 flex flex-col items-center justify-center py-6 text-center md:py-8"
                   >
-                    <div
-                      data-liquid-section
-                      className={`pointer-events-none w-full transform-gpu ${alignClass}`}
-                      style={{
-                        willChange: "opacity, transform, filter",
-                      }}
-                    >
+                    <div className={`pointer-events-none w-full transform-gpu ${alignClass}`}>
                       <p className="sr-only">{section.eyebrow}</p>
                       <Heading className="sr-only">{section.title}</Heading>
                       <p className="sr-only">{section.text}</p>
 
                       <div aria-hidden="true" className="w-full">
-                        <p
-                          data-liquid-pop
-                          className={`mb-3 h-5 max-w-none transform-gpu font-sans text-xs font-semibold uppercase leading-none [letter-spacing:0] md:h-6 md:text-xs lg:h-6 lg:text-sm ${alignClass}`}
+                        <div
                           style={{
                             color: LOGO_BLUE_LIGHT,
                             textShadow: `0 0 16px ${LOGO_BLUE_GLOW}`,
                           }}
                         >
-                          {section.eyebrow}
-                        </p>
-                        <p
-                          data-liquid-pop
-                          className={`max-w-none transform-gpu font-sans font-bold text-white [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
+                          {shouldRevealCopy ? (
+                            <AnimatedText
+                              key={`${section.key}-eyebrow-${copyRevealSection}`}
+                              text={section.eyebrow}
+                              animationType="words"
+                              duration={0.42}
+                              delay={0.02}
+                              staggerDelay={0.045}
+                              initialY={8}
+                              className={`mb-3 h-5 max-w-none transform-gpu font-sans text-xs font-semibold uppercase leading-none [letter-spacing:0] md:h-6 md:text-xs lg:h-6 lg:text-sm ${alignClass}`}
+                            />
+                          ) : (
+                            <p
+                              className={`mb-3 h-5 max-w-none transform-gpu font-sans text-xs font-semibold uppercase leading-none opacity-0 [letter-spacing:0] md:h-6 md:text-xs lg:h-6 lg:text-sm ${alignClass}`}
+                            >
+                              {section.eyebrow}
+                            </p>
+                          )}
+                        </div>
+                        <div
                           style={{
                             WebkitTextStroke: `0.35px ${LOGO_BLUE}`,
                             textShadow: `0 0 18px ${LOGO_BLUE_GLOW}, 0 0 42px rgba(88,169,219,0.24)`,
                           }}
                         >
-                          {section.title}
-                        </p>
-                        <p
-                          data-liquid-pop
-                          className={`transform-gpu font-sans font-medium text-slate-200/85 [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
-                        >
-                          {section.text}
-                        </p>
+                          {shouldRevealCopy ? (
+                            <AnimatedText
+                              key={`${section.key}-title-${copyRevealSection}`}
+                              text={section.title}
+                              animationType="words"
+                              duration={0.48}
+                              delay={0.06}
+                              staggerDelay={0.055}
+                              initialY={14}
+                              className={`max-w-none transform-gpu font-sans font-bold text-white [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
+                            />
+                          ) : (
+                            <p
+                              className={`max-w-none transform-gpu font-sans font-bold text-white opacity-0 [letter-spacing:0] ${titleSizeClass} ${alignClass}`}
+                            >
+                              {section.title}
+                            </p>
+                          )}
+                        </div>
+                        {shouldRevealCopy ? (
+                          <AnimatedText
+                            key={`${section.key}-text-${copyRevealSection}`}
+                            text={section.text}
+                            animationType="words"
+                            duration={0.4}
+                            delay={0.16}
+                            staggerDelay={0.024}
+                            initialY={10}
+                            className={`transform-gpu font-sans font-medium text-slate-200/85 [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
+                          />
+                        ) : (
+                          <p
+                            className={`transform-gpu font-sans font-medium text-slate-200/85 opacity-0 [letter-spacing:0] [text-shadow:0_0_18px_rgba(15,23,42,0.75)] ${bodySizeClass} ${alignClass}`}
+                          >
+                            {section.text}
+                          </p>
+                        )}
                       </div>
                       <a
                         data-scrolly-cta
                         href={section.href}
-                        className="pointer-events-auto mt-8 inline-flex h-12 w-fit origin-center items-center justify-center rounded-full border bg-[#1075AD]/15 px-7 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(16,117,173,0.18),0_0_34px_rgba(16,117,173,0.52),inset_0_0_16px_rgba(88,169,219,0.08)] transition-[border-color,box-shadow,color,background-color,transform] duration-300 hover:-translate-y-0.5 hover:border-[#58A9DB] hover:bg-[#1075AD]/25 hover:shadow-[0_0_0_1px_rgba(88,169,219,0.28),0_0_48px_rgba(16,117,173,0.58),inset_0_0_18px_rgba(88,169,219,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1075AD]/45 md:mt-10 md:h-[3.35rem] md:px-10 md:text-base"
+                        className={`mt-8 inline-flex h-12 w-fit origin-center items-center justify-center rounded-full border bg-[#1075AD]/15 px-7 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(16,117,173,0.18),0_0_34px_rgba(16,117,173,0.52),inset_0_0_16px_rgba(88,169,219,0.08)] transition-[border-color,box-shadow,color,background-color,transform,opacity] duration-300 hover:-translate-y-0.5 hover:border-[#58A9DB] hover:bg-[#1075AD]/25 hover:shadow-[0_0_0_1px_rgba(88,169,219,0.28),0_0_48px_rgba(16,117,173,0.58),inset_0_0_18px_rgba(88,169,219,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1075AD]/45 md:mt-10 md:h-[3.35rem] md:px-10 md:text-base ${ctaRevealClass}`}
                         style={{
                           borderColor: LOGO_BLUE,
                         }}
