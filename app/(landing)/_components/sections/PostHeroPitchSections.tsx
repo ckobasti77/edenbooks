@@ -2,7 +2,6 @@ import Image from "next/image"
 import type { ReactNode } from "react"
 import {
   BookOpenIcon,
-  CheckCircle2Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HeadphonesIcon,
@@ -10,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { landingCopy } from "../../_constants/landing-copy"
+import { PricingSection } from "./PricingSection"
 import { Container } from "@/components/ui/Container"
 import { cn } from "@/lib/utils/cn"
 
@@ -190,72 +190,6 @@ function CatalogSection() {
   )
 }
 
-function CreatorSection() {
-  const section = landingCopy.sections.pricing
-
-  return (
-    <section id={section.id} className="relative isolate overflow-hidden py-24 text-white sm:py-28 lg:py-32">
-      <SectionBackground />
-      <Container>
-        <div className="grid items-center gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16">
-          <div>
-            <h2 className="max-w-3xl text-center text-[clamp(2.4rem,5vw,5rem)] font-medium leading-[0.98] text-white [font-family:var(--font-display)] lg:text-left">
-              {section.title}
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-center text-base leading-8 text-white/68 [font-family:var(--font-reading)] sm:text-lg lg:mx-0 lg:text-left">
-              {section.text}
-            </p>
-
-            <div className="mt-12 flex justify-center lg:justify-start">
-              <GlowButton href="#zapocni">Započni čitanje</GlowButton>
-            </div>
-          </div>
-
-          <div className="grid gap-4">
-            {section.packages.map((item, index) => (
-              <article
-                key={item.name}
-                className={cn(
-                  "rounded-[1.35rem] border border-white/16 bg-white/[0.075] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-xl",
-                  index === 1 && "border-[#58b8ff]/52 bg-[#0b1726]/82 shadow-[0_26px_82px_rgba(47,140,255,0.18)]"
-                )}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-2xl font-bold text-white [font-family:var(--font-ui)]">
-                    {item.name}
-                  </h3>
-                  <span className="rounded-full border border-white/14 bg-white/[0.1] px-3 py-1 text-xs font-bold text-white/58 [font-family:var(--font-ui)]">
-                    0{index + 1}
-                  </span>
-                </div>
-                <p className="mt-4 max-w-md text-base leading-7 text-white/66 [font-family:var(--font-reading)]">
-                  {item.description}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {[
-                    landingCopy.sections.digitalLibrary.visualItems[index + 1] ?? "",
-                    landingCopy.sections.readListen.visualItems[index + 1] ?? "",
-                  ]
-                    .filter(Boolean)
-                    .map((label) => (
-                      <span
-                        key={label}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/24 px-3 py-1.5 text-xs font-bold text-white/68 [font-family:var(--font-ui)]"
-                      >
-                        <CheckCircle2Icon className="size-3.5 text-[#58b8ff]" />
-                        {label}
-                      </span>
-                    ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </Container>
-    </section>
-  )
-}
-
 function AppPhone({ variant }: { variant: "device" | "catalog" }) {
   const isCatalog = variant === "catalog"
 
@@ -386,7 +320,7 @@ function PostHeroPitchSections() {
   return (
     <>
       <CatalogSection />
-      <CreatorSection />
+      <PricingSection />
       <MobileAppSection />
     </>
   )

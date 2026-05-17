@@ -23,7 +23,7 @@ const FRAME_COUNTS: Record<FrameVariant, number> = {
   mobile: 212,
 };
 const STOP_FRAMES_BY_VARIANT: Record<FrameVariant, number[]> = {
-  desktop: [1, 70, 142, 183],
+  desktop: [1, 61, 122, 183],
   mobile: [1, 70, 142, 212],
 };
 const TRANSITION_DURATION = 1.25;
