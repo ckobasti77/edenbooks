@@ -1,8 +1,14 @@
 "use client"
 
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react"
 import gsap from "gsap"
 import Lenis from "lenis"
-import { useEffect, type ReactNode } from "react"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 gsap.registerPlugin(ScrollTrigger)
@@ -11,7 +17,19 @@ type SmoothScrollProviderProps = {
   children: ReactNode
 }
 
+type SmoothScrollRef = {
+  current: Lenis | null
+}
+
+const SmoothScrollContext = createContext<SmoothScrollRef | null>(null)
+
+function useSmoothScroll() {
+  return useContext(SmoothScrollContext)
+}
+
 function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
+  const lenisRef = useRef<Lenis | null>(null)
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -26,6 +44,8 @@ function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       smoothWheel: true,
       anchors: true,
     })
+    lenisRef.current = lenis
+
     const updateScrollTrigger = () => ScrollTrigger.update()
     const updateLenis = (time: number) => {
       lenis.raf(time * 1000)
@@ -39,10 +59,15 @@ function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       lenis.off("scroll", updateScrollTrigger)
       gsap.ticker.remove(updateLenis)
       lenis.destroy()
+      lenisRef.current = null
     }
   }, [])
 
-  return children
+  return (
+    <SmoothScrollContext.Provider value={lenisRef}>
+      {children}
+    </SmoothScrollContext.Provider>
+  )
 }
 
-export { SmoothScrollProvider }
+export { SmoothScrollProvider, useSmoothScroll }
