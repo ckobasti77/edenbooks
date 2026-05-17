@@ -114,18 +114,18 @@ function easeInOutSine(progress: number) {
 
 function getPanelPositionClass(position: ScrollyCopySection["position"]) {
   if (position === "bottom-left") {
-    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-1/2 md:right-auto md:top-auto md:bottom-[5vh] md:-translate-x-1/2 md:translate-y-0";
+    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-12 md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-16 xl:left-20";
   }
 
   if (position === "bottom-right") {
-    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-1/2 md:right-auto md:top-auto md:bottom-[5vh] md:-translate-x-1/2 md:translate-y-0";
+    return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-auto md:right-12 md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:right-16 xl:right-20";
   }
 
   if (position === "bottom-center") {
     return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-1/2 md:right-auto md:top-auto md:bottom-[1.5vh] md:-translate-x-1/2 md:translate-y-0";
   }
 
-  return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-1/2 md:right-auto md:top-[36%] md:-translate-x-1/2";
+  return "left-5 right-5 top-1/2 -translate-y-1/2 md:left-12 md:right-auto md:top-1/2 md:-translate-y-1/2 md:translate-x-0 lg:left-16 xl:left-20";
 }
 
 function LiquidPopFilter() {
