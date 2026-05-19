@@ -205,6 +205,7 @@ function drawImageInsetWidth(
 function VideoScrollytellingHero() {
   const smoothScrollRef = useSmoothScroll();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const stickyRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sectionRefs = useRef<Array<HTMLDivElement | null>>([]);
   const imagesByVariantRef = useRef<
@@ -482,10 +483,26 @@ function VideoScrollytellingHero() {
 
     const resizeCanvas = () => {
       const pixelRatio = window.devicePixelRatio || 1;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      const stickyBounds = stickyRef.current?.getBoundingClientRect();
+      const viewportWidth = Math.max(
+        1,
+        Math.round(stickyBounds?.width || window.innerWidth),
+      );
+      const viewportHeight = Math.max(
+        1,
+        Math.round(stickyBounds?.height || window.innerHeight),
+      );
       const physicalWidth = Math.round(viewportWidth * pixelRatio);
       const physicalHeight = Math.round(viewportHeight * pixelRatio);
+
+      if (
+        canvasSizeRef.current.width === physicalWidth &&
+        canvasSizeRef.current.height === physicalHeight &&
+        canvas.style.width === `${viewportWidth}px` &&
+        canvas.style.height === `${viewportHeight}px`
+      ) {
+        return;
+      }
 
       canvas.width = physicalWidth;
       canvas.height = physicalHeight;
@@ -935,6 +952,134 @@ function VideoScrollytellingHero() {
       setStopInstantly(currentStopRef.current, true);
     };
 
+    if (activeVariant === "mobile") {
+      const frameCount = getFrameCount("mobile");
+      const normalizedStops = stopFrames.map((frame) =>
+        frameCount > 1 ? clamp((frame - 1) / (frameCount - 1), 0, 1) : 0,
+      );
+      const sectionBoundaries = normalizedStops.map((stop, index) => {
+        if (index === 0) {
+          return 0;
+        }
+
+        return ((normalizedStops[index - 1] ?? 0) + stop) / 2;
+      });
+      const getSectionIndexForProgress = (progress: number) => {
+        let nextIndex = 0;
+
+        for (let index = 1; index < sectionBoundaries.length; index += 1) {
+          if (progress >= sectionBoundaries[index]) {
+            nextIndex = index;
+          }
+        }
+
+        return Math.round(clamp(nextIndex, 0, maxStopIndex));
+      };
+      const getMobileScrollProgress = () => {
+        const stickyHeight =
+          stickyRef.current?.getBoundingClientRect().height ||
+          window.innerHeight;
+        const scrollableDistance = Math.max(
+          1,
+          root.offsetHeight - stickyHeight,
+        );
+
+        return clamp(
+          (window.scrollY - getSectionStart()) / scrollableDistance,
+          0,
+          1,
+        );
+      };
+      const revealMobilePanel = (index: number, immediate = false) => {
+        const nextIndex = Math.round(clamp(index, 0, maxStopIndex));
+
+        activeSectionRef.current = nextIndex;
+        currentStopRef.current = nextIndex;
+        setActiveSection(nextIndex);
+        scheduleCopyReveal(nextIndex);
+
+        panels.forEach((panel, panelIndex) => {
+          const isActive = panelIndex === nextIndex;
+
+          if (immediate) {
+            gsap.set(panel, {
+              autoAlpha: isActive ? 1 : 0,
+              y: isActive ? 0 : 14,
+              overwrite: true,
+            });
+          } else {
+            gsap.to(panel, {
+              autoAlpha: isActive ? 1 : 0,
+              y: isActive ? 0 : 14,
+              duration: prefersReducedMotion ? REDUCED_MOTION_DURATION : 0.24,
+              ease: "power2.out",
+              overwrite: true,
+            });
+          }
+        });
+      };
+      const renderMobileFrameState = () => {
+        const progress =
+          frameCount > 1
+            ? clamp((frameObject.currentFrame - 1) / (frameCount - 1), 0, 1)
+            : 0;
+        const nextSection = getSectionIndexForProgress(progress);
+
+        renderFrame();
+
+        if (nextSection !== activeSectionRef.current) {
+          revealMobilePanel(nextSection);
+        }
+      };
+
+      gsap.killTweensOf(frameObject);
+      isAnimatingRef.current = false;
+      isInStepZoneRef.current = false;
+
+      gsap.set(panels, {
+        autoAlpha: 0,
+        y: 18,
+        willChange: "opacity, transform",
+      });
+
+      const initialProgress = getMobileScrollProgress();
+      const initialSection = getSectionIndexForProgress(initialProgress);
+
+      frameObject.currentFrame = 1 + initialProgress * (frameCount - 1);
+      renderFrame();
+      revealMobilePanel(initialSection, true);
+
+      const mobileTween = gsap.fromTo(
+        frameObject,
+        { currentFrame: 1 },
+        {
+          currentFrame: frameCount,
+          ease: "none",
+          immediateRender: false,
+          onUpdate: renderMobileFrameState,
+          paused: true,
+        },
+      );
+      const mobileScrollTrigger = ScrollTrigger.create({
+        animation: mobileTween,
+        trigger: root,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: prefersReducedMotion ? true : 0.45,
+        invalidateOnRefresh: true,
+      });
+
+      renderMobileFrameState();
+      ScrollTrigger.refresh();
+
+      return () => {
+        clearCopyRevealTimer();
+        mobileScrollTrigger.kill();
+        mobileTween.kill();
+        gsap.killTweensOf(frameObject);
+      };
+    }
+
     gsap.set(panels, {
       autoAlpha: 0,
       y: 18,
@@ -1022,10 +1167,21 @@ function VideoScrollytellingHero() {
       aria-label="EdenBooks canvas scrollytelling"
       className="relative isolate bg-[#020615] font-sans text-white"
     >
-      <span id="preporuke" className="absolute top-[225vh]" aria-hidden="true" />
-      <span id="audio-knjige" className="absolute top-[300vh]" aria-hidden="true" />
-      <div ref={rootRef} className="relative h-[400vh] overflow-clip">
-        <div className="sticky top-0 h-screen overflow-hidden bg-[#020615]">
+      <span
+        id="preporuke"
+        className="absolute top-[225svh] lg:top-[225vh]"
+        aria-hidden="true"
+      />
+      <span
+        id="audio-knjige"
+        className="absolute top-[300svh] lg:top-[300vh]"
+        aria-hidden="true"
+      />
+      <div ref={rootRef} className="relative h-[400svh] overflow-clip lg:h-[400vh]">
+        <div
+          ref={stickyRef}
+          className="sticky top-0 h-[100svh] overflow-hidden bg-[#020615] lg:h-screen"
+        >
           <canvas
             ref={canvasRef}
             className="pointer-events-none block h-full w-full origin-center scale-100 transition-transform duration-700 ease-out will-change-transform lg:scale-[0.82]"
