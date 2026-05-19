@@ -125,10 +125,29 @@ export const landingCopy = {
     },
     multiDevice: {
       id: "uredjaji",
-      title: "Počni na telefonu, nastavi gde god želiš.",
-      text: "Tvoj progres, omiljeni naslovi i beleške ostaju sinhronizovani - na telefonu, tabletu i računaru.",
+      title: "Jedna biblioteka. Svaki ekran.",
+      text: "Nastavi čitanje bez prekida na desktopu, tabletu i telefonu. Tvoje knjige, beleške i napredak ostaju sinhronizovani gde god da si.",
       visualTitle: "Sinhronizovano",
-      visualItems: ["Telefon", "Tablet", "Desktop", "Sinhronizovano"],
+      visualItems: ["Desktop", "Tablet", "Telefon", "Sinhronizovano", "Audio"],
+      supportingText: "Prebaci se sa uređaja na uređaj bez gubitka toka čitanja.",
+      benefits: [
+        {
+          title: "Uvek sinhronizovano",
+          description: "Napredak, beleške i citati prate te na svim uređajima.",
+        },
+        {
+          title: "Nastavi tačno gde si stao",
+          description: "Bez obzira na uređaj, priča te čeka.",
+        },
+        {
+          title: "Čitaj ili slušaj",
+          description: "Prebaci se između čitanja i audio verzije u jednom dodiru.",
+        },
+        {
+          title: "Tvoji podaci su sigurni",
+          description: "Privatnost i bezbednost tvoje biblioteke su naš prioritet.",
+        },
+      ],
     },
     finalCta: {
       id: "zapocni",
