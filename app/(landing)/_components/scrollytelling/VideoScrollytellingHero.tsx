@@ -952,8 +952,8 @@ function VideoScrollytellingHero() {
       setStopInstantly(currentStopRef.current, true);
     };
 
-    if (activeVariant === "mobile") {
-      const frameCount = getFrameCount("mobile");
+    if (activeVariant === "desktop" || activeVariant === "mobile") {
+      const frameCount = getFrameCount(activeVariant);
       const normalizedStops = stopFrames.map((frame) =>
         frameCount > 1 ? clamp((frame - 1) / (frameCount - 1), 0, 1) : 0,
       );
@@ -975,7 +975,7 @@ function VideoScrollytellingHero() {
 
         return Math.round(clamp(nextIndex, 0, maxStopIndex));
       };
-      const getMobileScrollProgress = () => {
+      const getScrubScrollProgress = () => {
         const stickyHeight =
           stickyRef.current?.getBoundingClientRect().height ||
           window.innerHeight;
@@ -990,7 +990,7 @@ function VideoScrollytellingHero() {
           1,
         );
       };
-      const revealMobilePanel = (index: number, immediate = false) => {
+      const revealScrubPanel = (index: number, immediate = false) => {
         const nextIndex = Math.round(clamp(index, 0, maxStopIndex));
 
         activeSectionRef.current = nextIndex;
@@ -1018,7 +1018,7 @@ function VideoScrollytellingHero() {
           }
         });
       };
-      const renderMobileFrameState = () => {
+      const renderScrubFrameState = () => {
         const progress =
           frameCount > 1
             ? clamp((frameObject.currentFrame - 1) / (frameCount - 1), 0, 1)
@@ -1028,7 +1028,7 @@ function VideoScrollytellingHero() {
         renderFrame();
 
         if (nextSection !== activeSectionRef.current) {
-          revealMobilePanel(nextSection);
+          revealScrubPanel(nextSection);
         }
       };
 
@@ -1042,26 +1042,26 @@ function VideoScrollytellingHero() {
         willChange: "opacity, transform",
       });
 
-      const initialProgress = getMobileScrollProgress();
+      const initialProgress = getScrubScrollProgress();
       const initialSection = getSectionIndexForProgress(initialProgress);
 
       frameObject.currentFrame = 1 + initialProgress * (frameCount - 1);
       renderFrame();
-      revealMobilePanel(initialSection, true);
+      revealScrubPanel(initialSection, true);
 
-      const mobileTween = gsap.fromTo(
+      const scrubTween = gsap.fromTo(
         frameObject,
         { currentFrame: 1 },
         {
           currentFrame: frameCount,
           ease: "none",
           immediateRender: false,
-          onUpdate: renderMobileFrameState,
+          onUpdate: renderScrubFrameState,
           paused: true,
         },
       );
-      const mobileScrollTrigger = ScrollTrigger.create({
-        animation: mobileTween,
+      const scrubScrollTrigger = ScrollTrigger.create({
+        animation: scrubTween,
         trigger: root,
         start: "top top",
         end: "bottom bottom",
@@ -1069,13 +1069,13 @@ function VideoScrollytellingHero() {
         invalidateOnRefresh: true,
       });
 
-      renderMobileFrameState();
+      renderScrubFrameState();
       ScrollTrigger.refresh();
 
       return () => {
         clearCopyRevealTimer();
-        mobileScrollTrigger.kill();
-        mobileTween.kill();
+        scrubScrollTrigger.kill();
+        scrubTween.kill();
         gsap.killTweensOf(frameObject);
       };
     }
